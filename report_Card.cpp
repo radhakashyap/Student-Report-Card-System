@@ -1,169 +1,154 @@
+#include <array>
 #include <iostream>
 #include <string>
-#include <vector>
-using namespace std;
 
-class Student
-{
-private:
-	string name;
-	int roll;
-	float english, history, geography, science, maths, average;
+// I don't like to use `using namespace`. It help me read the code better and see where all the methods are comming from.
+
+// Use global constants to avoid errors.
+// And if you want to change it later you change the value once throughout your code base
+constexpr std::size_t QUIZZES_COUNT = 2;
+
+/*
+ * Try to consolidate all your struct. You were having a struct named Student with fields
+ * that can be included in a student record. Hence the elmination.
+*/
+
+class StudentRecord {
 public:
+    std::string name;
+    char finalLetterGrade;
 
-	//This function assigns values to all fields. A function is used instead of a constructor because dynamic memory 
-	//extension using vector is troublesome with constructors. Otherwise, We will have to create a parameter-less constructor.
+private:
+    // Try to use standard containers where posible
+    std::array<double, QUIZZES_COUNT> quiz;
+    double midterm, finalExam;
+    double finalGrade;
 
-	void InsertData(string n, int r, float eng, float his, float geo, float sci, float math)
-	{
-		name = n;
-		roll = r;
-		english = eng;
-		history = his;
-		geography = geo;
-		science = sci;
-		maths = math;
+public:
+    void inputQuizzes();
+    void inputMidtermGrade();
+    void inputFinalGrade();
 
-		average = (english + history + geography + science + maths) / 5;
-	}
+    double* getQuizzes();
+    double getMidterm();
+    double getFinalExam();
 
-	int GetRoll()
-	{
-		return roll;
-	}
+    // If a method doesn't access a field of the class, that method could be static.
+    static double calcPercent(double grade, double outOfTotalPts, double percentOfTotal);
+    static char calcFinalLetterGrade(double finalGrade);
 
-	void Report()
-	{
-		cout << "\nSTUDENT REPORT" << endl;
-		cout << "Name: " << name << endl;
-		cout << "Roll: " << roll << endl;
-		cout << "English Marks: " << english << endl;
-		cout << "History Marks: " << history << endl;
-		cout << "Geography Marks: " << geography << endl;
-		cout << "Science Marks: " << science << endl;
-		cout << "Maths Marks: " << maths << endl;
-		cout << "Average Marks: " << average << endl;
-		cout << "GPA: " << average / 10 << endl;
-	}
+    // Since this method are only setters there is no need for them to return the value
+    void setFinalNumericGrade(double newFinalGrade);
+    void setFinalLetterGrade(char newFinalLetterGrade);
 };
 
-//Vector is used instead of an array due to its flexibility in size extension
+double* StudentRecord::getQuizzes() {
+    /*
+        C style arrays are basically pointer to memory too. So you could have done something like this
 
-vector<Student> database;
-int databaseSize;
+            double data[2];
+            return data;
 
-void PrintReport(int roll)
-{
-	for (int i = 0; i < databaseSize; i++)
-		if (database[i].GetRoll() == roll)
-		{
-			database[i].Report();
-			return;
-		}
-
-	cout << "\nTHE ENTERED ROLL(" << roll << ") DOES NOT EXIST.\n" << endl;
+        This would have returned a pointer of data. Without the necesity to create an extra variable
+    */
+    return quiz.data();
 }
 
-void ResizeDatabase()
-{
-	database.resize(databaseSize);
+double StudentRecord::getMidterm() { return midterm; }
+double StudentRecord::getFinalExam() { return finalExam; }
+
+double StudentRecord::calcPercent(double grade, double outOfTotalPts, double percentOfTotal) {
+    return (grade / outOfTotalPts) * percentOfTotal;
 }
 
-void ShowStats()
-{
-	cout << "\nSIZE: " << databaseSize << endl;
-	cout << "STUDENT LIST (ROLL): ";
-
-	if (databaseSize == 0)
-	{
-		cout << "DATABASE IS EMPTY\n" << endl;
-		return;
-	}
-
-	for (int i = 0; i < databaseSize; i++)
-		cout << database[i].GetRoll() + " ";
-
-	cout << "\n" << endl;
+void StudentRecord::setFinalNumericGrade(double newFinalGrade) {
+    // Since this method are only setters there is no need for them to return the value
+    finalGrade = newFinalGrade;
 }
 
-void Add()
-{
-	string name;
-	int roll;
-	float english, history, geography, science, maths;
-
-	cout << "\nPLEASE ENTER THE DETAILS OF THE STUDENT:" << endl;
-	cout << "NAME: ";
-	cin.ignore();
-	getline(cin, name);
-	cout << "ROLL: ";
-	cin >> roll;
-	cout << "MARKS IN ENGLISH, HISTORY, GEOGRAPHY, SCIENCE AND MATHS: ";
-	cin >> english >> history >> geography >> science >> maths;
-	cout << "\nSTUDENT DATA ADDED TO DATABASE" << endl;
-
-	databaseSize++;
-	ResizeDatabase();
-	database[databaseSize - 1].InsertData(name, roll, english, history, geography, science, maths);
+// This method is static because doesn't access any of the member of StudentRecord
+char StudentRecord::calcFinalLetterGrade(double finalGrade) {
+    if (finalGrade >= 90.0)
+        return 'A';
+    // You don't need to prove `finalGrade < 90` since it would automatically be qualified for the above if clause.
+    else if (finalGrade >= 80.0) 
+        return 'B';
+    else if (finalGrade >= 70.0)
+        return 'C';
+    else if (finalGrade >= 60.0)
+        return 'D';
+    else
+        return 'F';
 }
 
-void Delete(int roll)
-{
-	for (int i = 0; i < databaseSize; i++)
-		if (database[i].GetRoll() == roll)
-		{
-			database.erase(database.begin() + i);
-			cout << "\nSTUDENT WITH ROLL " << roll << " HAS BEEN REMOVED FROM THE DATABASE\n" << endl;
-			databaseSize--;
-			return;
-		}
-
-	cout << "\nTHE ENTERED ROLL(" << roll << ") DOES NOT EXIST.\n" << endl;
+void StudentRecord::setFinalLetterGrade(char newFinalLetterGrade) {
+    // Since this method are only setters there is no need for them to return the value
+    finalLetterGrade = newFinalLetterGrade;
 }
 
-int main()
-{
-	int choice, roll;
+void StudentRecord::inputQuizzes() {
+    // This method is unnecessary since they are only called once. Their code could be putted where they are called
+    std::cout << "Enter quiz grades : ";
+    for (int i = 0; i < QUIZZES_COUNT; i++) {
+        std::cin >> quiz[i];
+    }
+}
 
-	cout << "STUDENT REPORT DATABASE MANAGEMENT" << endl;
-	cout << "==================================" << endl;
+void StudentRecord::inputMidtermGrade() {
+    // This method is unnecessary since they are only called once. Their code could be putted where they are called
+    std::cout << "Enter midterm grade : ";
+    std::cin >> midterm;
+}
 
-	do
-	{
-		cout << "\n1. ADD NEW STUDENT DATA\n2. DELETE STUDENT DATA\n3. PRINT REPORT\n4. DATABASE STATS\n0. EXIT" << endl;
-		cout << "YOUR CHOICE: ";
-		cin >> choice;
+void StudentRecord::inputFinalGrade() {
+    // This methods is unnecessary since they are only called once. Their code could be putted where they are called
+    std::cout << "Enter final grade : ";
+    std::cin >> finalExam;
+}
 
-		switch (choice)
-		{
-		case 1:
-			Add();
-			break;
+int main() {
+    StudentRecord student;
 
-		case 2:
-			cout << "ROLL: ";
-			cin >> roll;
-			Delete(roll);
-			break;
+    std::cout << "Enter name : ";
+    std::cin >> student.name;
 
-		case 3:
-			cout << "ROLL: ";
-			cin >> roll;
-			PrintReport(roll);
-			break;
+    student.inputQuizzes();
+    student.inputMidtermGrade();
+    student.inputFinalGrade();
 
-		case 4:
-			ShowStats();
-			break;
+    // General iostream tip: Don't use std::endl since it flush the stream buffer. That have performance impact
+    // Source: Video by Jason Turner https://www.youtube.com/watch?v=GMqQOEZYVJQ
 
-		case 0:
-			break;
+    double* ptr = student.getQuizzes();
+    for (int i = 0; i < QUIZZES_COUNT; i++)
+        std::cout << "Quiz " << i + 1 << ": " << ptr[i] << '\n';
 
-		default:
-			cout << "\nINVALID CHOICE\n" << endl;
-			break;
-		}
-	} while (choice);
 
-	return 0;
+    std::cout << "Midterm : " << student.getMidterm() << '\n';
+
+    std::cout << "Final Exam : " << student.getFinalExam() << '\n';
+
+    // calculations //
+
+    double quizSum = 0.0;
+    for (int i = 0; i < QUIZZES_COUNT; i++)
+        quizSum += ptr[i];
+
+    // All of this "random" numbers (20.0, 25.0, 50.0, 100.0) can be made into constant to make the code reader aware of their significance
+    double quizPercent = StudentRecord::calcPercent(quizSum, 20.0, 25.0);
+    double midtermPercent = StudentRecord::calcPercent(student.getMidterm(), 100.0, 25.0);
+    double finalPercent = StudentRecord::calcPercent(student.getFinalExam(), 100.0, 50.0);
+
+    double finalNumGrade = quizPercent + midtermPercent + finalPercent;
+
+    student.setFinalNumericGrade(finalNumGrade);
+
+    char letterGrade = StudentRecord::calcFinalLetterGrade(finalNumGrade);
+
+    student.setFinalLetterGrade(letterGrade);
+
+    std::cout << "Name : " << student.name << '\n';
+    std::cout << "Final Grade : " << student.finalLetterGrade << '\n';
+
+    return 0;
 }
