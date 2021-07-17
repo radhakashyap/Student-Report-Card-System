@@ -2,12 +2,7 @@
 #include <iostream>
 #include <string>
 
-// I don't like to use `using namespace`. It help me read the code better and see where all the methods are comming from.
-
-// Use global constants to avoid errors.
-// And if you want to change it later you change the value once throughout your code base
 constexpr std::size_t QUIZZES_COUNT = 2;
-
 
 class StudentRecord {
 public:
