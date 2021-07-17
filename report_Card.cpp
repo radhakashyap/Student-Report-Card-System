@@ -8,10 +8,6 @@
 // And if you want to change it later you change the value once throughout your code base
 constexpr std::size_t QUIZZES_COUNT = 2;
 
-/*
- * Try to consolidate all your struct. You were having a struct named Student with fields
- * that can be included in a student record. Hence the elmination.
-*/
 
 class StudentRecord {
 public:
@@ -19,7 +15,6 @@ public:
     char finalLetterGrade;
 
 private:
-    // Try to use standard containers where posible
     std::array<double, QUIZZES_COUNT> quiz;
     double midterm, finalExam;
     double finalGrade;
@@ -33,11 +28,10 @@ public:
     double getMidterm();
     double getFinalExam();
 
-    // If a method doesn't access a field of the class, that method could be static.
     static double calcPercent(double grade, double outOfTotalPts, double percentOfTotal);
     static char calcFinalLetterGrade(double finalGrade);
 
-    // Since this method are only setters there is no need for them to return the value
+    
     void setFinalNumericGrade(double newFinalGrade);
     void setFinalLetterGrade(char newFinalLetterGrade);
 };
